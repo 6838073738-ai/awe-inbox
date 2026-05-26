@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Body, HelioVector, GeoVector } from "astronomy-engine";
 import { PlanetHoverPopup } from "./PlanetHoverPopup";
+import { PauseButton } from "./PauseButton";
 
 /**
  * The solar system rendered in Three.js at a compressed-but-recognizable
@@ -69,6 +70,13 @@ export function SolarSystem() {
     x: number;
     y: number;
   } | null>(null);
+  const [paused, setPaused] = useState(false);
+  // The rAF tick captures the initial value of `paused`; ref lets it read
+  // the live value.
+  const pausedRef = useRef(false);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -470,7 +478,8 @@ export function SolarSystem() {
         function tick(now: number) {
           const dt = (now - lastTime) / 1000; // sec
           lastTime = now;
-          if (!prefersReduced) {
+          const animating = !prefersReduced && !pausedRef.current;
+          if (animating) {
             elapsedSimDays += dt * TIME_SCALE_DAYS_PER_SEC;
           }
           const simDate = new Date(
@@ -517,7 +526,7 @@ export function SolarSystem() {
                * unlikely to happen unless someone scrubs the clock. */
             }
             // Self-rotation
-            if (!prefersReduced) {
+            if (animating) {
               const dayRot =
                 ((dt * TIME_SCALE_DAYS_PER_SEC) / def.rotPeriodDays) *
                 Math.PI *
@@ -527,7 +536,7 @@ export function SolarSystem() {
           }
 
           // Sun self-rotation (~25 days at equator)
-          if (!prefersReduced) {
+          if (animating) {
             sun.rotation.y += (dt * TIME_SCALE_DAYS_PER_SEC / 25) * Math.PI * 2;
           }
 
@@ -652,6 +661,13 @@ export function SolarSystem() {
           y={hovered.y}
         />
       ) : null}
+
+      {/* Pause control */}
+      <PauseButton
+        paused={paused}
+        onToggle={() => setPaused((p) => !p)}
+        label="orbital motion"
+      />
 
       {/* 4-dimensions-of-gravity legend in the bottom-left.
           Pinned, low-key — so the curious can decode the four visual layers

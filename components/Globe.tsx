@@ -7,6 +7,7 @@ import { CategoryIcon } from "./CategoryIcon";
 import { EventModal } from "./EventModal";
 import { FlagMarker } from "./FlagMarker";
 import { CountryHoverPopup } from "./CountryHoverPopup";
+import { PauseButton } from "./PauseButton";
 import { accentVar, categoryTitle } from "@/lib/reflections";
 import { formatCoords, formatDate } from "@/lib/format";
 import type { GlobePoint } from "@/lib/globe-data";
@@ -36,6 +37,13 @@ export function Globe({
   const [textureReady, setTextureReady] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+  // Ref the rAF tick reads — useState alone would close over the initial
+  // value of `paused` inside the useEffect.
+  const pausedRef = useRef(false);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
   const [hoveredCountry, setHoveredCountry] = useState<{
     iso2: string;
     name: string;
@@ -394,7 +402,7 @@ export function Globe({
     function tick(now: number) {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
-      if (!prefersReduced) {
+      if (!prefersReduced && !pausedRef.current) {
         globe.rotation.y += dt * 0.085;
         stars.rotation.y += dt * 0.005;
       }
@@ -610,6 +618,16 @@ export function Globe({
       {/* Close-up modal */}
       {openPoint ? (
         <EventModal point={openPoint} onClose={() => setOpenId(null)} />
+      ) : null}
+
+      {/* Pause control — hidden while the satellite modal is open so the
+          modal owns the focus + viewport. */}
+      {!openPoint ? (
+        <PauseButton
+          paused={paused}
+          onToggle={() => setPaused((p) => !p)}
+          label="globe rotation"
+        />
       ) : null}
     </div>
   );
