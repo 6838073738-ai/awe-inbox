@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Body, HelioVector, GeoVector } from "astronomy-engine";
+import { PlanetHoverPopup } from "./PlanetHoverPopup";
 
 /**
  * The solar system rendered in Three.js at a compressed-but-recognizable
@@ -23,6 +25,7 @@ import { Body, HelioVector, GeoVector } from "astronomy-engine";
 
 type PlanetDef = {
   name: string;
+  slug: string;
   body: Body;
   /** Display radius in scene units (NOT to scale — purely visual hierarchy) */
   radius: number;
@@ -40,14 +43,14 @@ type PlanetDef = {
 };
 
 const PLANETS: PlanetDef[] = [
-  { name: "Mercury", body: Body.Mercury, radius: 0.10, distance: 5,  texture: "/textures/mercury.jpg", tilt: 0.03, rotPeriodDays: 58.6,  massWeight: 0.00000017 },
-  { name: "Venus",   body: Body.Venus,   radius: 0.16, distance: 7,  texture: "/textures/venus.jpg",   tilt: 177.3, rotPeriodDays: -243.0, massWeight: 0.00000245 },
-  { name: "Earth",   body: Body.Earth,   radius: 0.17, distance: 9.5,texture: "/textures/earth.jpg",   tilt: 23.5,  rotPeriodDays: 1.0,   massWeight: 0.000003 },
-  { name: "Mars",    body: Body.Mars,    radius: 0.12, distance: 12, texture: "/textures/mars.jpg",    tilt: 25.2,  rotPeriodDays: 1.03,  massWeight: 0.00000032 },
-  { name: "Jupiter", body: Body.Jupiter, radius: 0.70, distance: 17, texture: "/textures/jupiter.jpg", tilt: 3.13,  rotPeriodDays: 0.41,  massWeight: 0.000955 },
-  { name: "Saturn",  body: Body.Saturn,  radius: 0.58, distance: 22, texture: "/textures/saturn.jpg",  tilt: 26.7,  rotPeriodDays: 0.44,  massWeight: 0.000285 },
-  { name: "Uranus",  body: Body.Uranus,  radius: 0.32, distance: 26, texture: "/textures/uranus.jpg",  tilt: 97.8,  rotPeriodDays: -0.72, massWeight: 0.0000437 },
-  { name: "Neptune", body: Body.Neptune, radius: 0.31, distance: 29.5,texture: "/textures/neptune.jpg",tilt: 28.3,  rotPeriodDays: 0.67,  massWeight: 0.0000515 },
+  { name: "Mercury", slug: "mercury", body: Body.Mercury, radius: 0.10, distance: 5,  texture: "/textures/mercury.jpg", tilt: 0.03, rotPeriodDays: 58.6,  massWeight: 0.00000017 },
+  { name: "Venus",   slug: "venus",   body: Body.Venus,   radius: 0.16, distance: 7,  texture: "/textures/venus.jpg",   tilt: 177.3, rotPeriodDays: -243.0, massWeight: 0.00000245 },
+  { name: "Earth",   slug: "earth",   body: Body.Earth,   radius: 0.17, distance: 9.5,texture: "/textures/earth.jpg",   tilt: 23.5,  rotPeriodDays: 1.0,   massWeight: 0.000003 },
+  { name: "Mars",    slug: "mars",    body: Body.Mars,    radius: 0.12, distance: 12, texture: "/textures/mars.jpg",    tilt: 25.2,  rotPeriodDays: 1.03,  massWeight: 0.00000032 },
+  { name: "Jupiter", slug: "jupiter", body: Body.Jupiter, radius: 0.70, distance: 17, texture: "/textures/jupiter.jpg", tilt: 3.13,  rotPeriodDays: 0.41,  massWeight: 0.000955 },
+  { name: "Saturn",  slug: "saturn",  body: Body.Saturn,  radius: 0.58, distance: 22, texture: "/textures/saturn.jpg",  tilt: 26.7,  rotPeriodDays: 0.44,  massWeight: 0.000285 },
+  { name: "Uranus",  slug: "uranus",  body: Body.Uranus,  radius: 0.32, distance: 26, texture: "/textures/uranus.jpg",  tilt: 97.8,  rotPeriodDays: -0.72, massWeight: 0.0000437 },
+  { name: "Neptune", slug: "neptune", body: Body.Neptune, radius: 0.31, distance: 29.5,texture: "/textures/neptune.jpg",tilt: 28.3,  rotPeriodDays: 0.67,  massWeight: 0.0000515 },
 ];
 
 const SUN_RADIUS = 2.0;
@@ -59,8 +62,13 @@ const GRID_DEPTH_SCALE = 6; // visual stretch on the rubber-sheet depression
 
 export function SolarSystem() {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const [textureProgress, setTextureProgress] = useState({ loaded: 0, total: 0 });
-  const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<{
+    slug: string;
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -150,6 +158,7 @@ export function SolarSystem() {
           new THREE.SphereGeometry(SUN_RADIUS, 64, 64),
           new THREE.MeshBasicMaterial({ map: sunTex }),
         );
+        sun.userData.slug = "sun";
         scene.add(sun);
 
         // Sun corona — additive shader for a warm glow.
@@ -200,7 +209,29 @@ export function SolarSystem() {
           );
           mesh.rotation.z = (p.tilt * Math.PI) / 180;
           mesh.userData.planet = p;
+          mesh.userData.slug = p.slug;
           scene.add(mesh);
+
+          // Time-dilation rings — concentric horizontal rings that hang
+          // around each massive body. Closest rings are slightly tinted
+          // toward the planet accent (which the popup also uses), giving a
+          // visual cue that time runs slower the deeper you sit in a
+          // gravity well. These also act as a generous click target.
+          for (let r = 0; r < 3; r++) {
+            const ringR = p.radius * (2.4 + r * 1.6);
+            const dilRing = new THREE.Mesh(
+              new THREE.RingGeometry(ringR - 0.01, ringR + 0.01, 64),
+              new THREE.MeshBasicMaterial({
+                color: 0xb8ae9b,
+                transparent: true,
+                opacity: 0.13 - r * 0.035,
+                side: THREE.DoubleSide,
+                depthWrite: false,
+              }),
+            );
+            dilRing.rotation.x = Math.PI / 2;
+            mesh.add(dilRing);
+          }
 
           // Saturn ring
           if (p.name === "Saturn") {
@@ -246,6 +277,7 @@ export function SolarSystem() {
               }),
             );
             moonMesh.name = "moon";
+            moonMesh.userData.slug = "moon";
             scene.add(moonMesh);
             // Updated each tick from astronomy-engine geocentric Moon pos
           }
@@ -279,6 +311,57 @@ export function SolarSystem() {
 
           planetMeshes.push({ def: p, mesh, orbitRing });
         }
+
+        // === Gravity vector field ===
+        // A grid of small arrows in the orbital plane showing the *direction*
+        // of net gravitational pull at sample points — i.e. the local
+        // gradient of the same potential the rubber sheet visualises. The
+        // Sun dominates, so most arrows point back toward the origin; near
+        // each planet the arrows curl inward, showing local wells.
+        const gravityArrowGroup = new THREE.Group();
+        const ARROW_RING_RADII = [3.5, 8, 13.5, 20, 25, 29];
+        const ARROWS_PER_RING = 18;
+        const arrowSpecs: Array<{
+          arrow: THREE.ArrowHelper;
+          origin: THREE.Vector3;
+        }> = [];
+        for (const ringR of ARROW_RING_RADII) {
+          for (let a = 0; a < ARROWS_PER_RING; a++) {
+            const angle = (a / ARROWS_PER_RING) * Math.PI * 2;
+            const origin = new THREE.Vector3(
+              Math.cos(angle) * ringR,
+              0,
+              Math.sin(angle) * ringR,
+            );
+            const arrow = new THREE.ArrowHelper(
+              new THREE.Vector3(-1, 0, 0),
+              origin,
+              0.7,
+              0xc8b8a0,
+              0.25,
+              0.18,
+            );
+            const lineMat = (
+              arrow.line as THREE.Line<
+                THREE.BufferGeometry,
+                THREE.LineBasicMaterial
+              >
+            ).material;
+            const coneMat = (
+              arrow.cone as THREE.Mesh<
+                THREE.ConeGeometry,
+                THREE.MeshBasicMaterial
+              >
+            ).material;
+            lineMat.transparent = true;
+            lineMat.opacity = 0.55;
+            coneMat.transparent = true;
+            coneMat.opacity = 0.7;
+            gravityArrowGroup.add(arrow);
+            arrowSpecs.push({ arrow, origin });
+          }
+        }
+        scene.add(gravityArrowGroup);
 
         // === Spacetime fabric grid ===
         // A horizontal plane below the orbital plane whose vertices are
@@ -346,6 +429,37 @@ export function SolarSystem() {
           oldEdges.dispose();
         }
         deformGrid();
+
+        // Recompute the gravity-vector arrows whenever bodyPositions has
+        // drifted — same cadence as deformGrid(). Arrow length is log-scaled
+        // so the Sun doesn't make every arrow point straight at it.
+        const tmpForce = new THREE.Vector3();
+        function refreshArrows() {
+          for (const { arrow, origin } of arrowSpecs) {
+            tmpForce.set(0, 0, 0);
+            for (const b of bodyPositions) {
+              const dx = b.x - origin.x;
+              const dz = b.z - origin.z;
+              const r2 = dx * dx + dz * dz + b.radiusSoft * b.radiusSoft;
+              const r = Math.sqrt(r2);
+              const f = b.mass / r2;
+              tmpForce.x += (dx / r) * f;
+              tmpForce.z += (dz / r) * f;
+            }
+            const mag = tmpForce.length();
+            if (mag > 0) {
+              tmpForce.normalize();
+              arrow.setDirection(tmpForce);
+              // Log-scaled length, clamped, so the Sun doesn't dominate
+              const len = Math.max(
+                0.25,
+                Math.min(1.4, 0.45 + Math.log10(1 + mag * 5000) * 0.2),
+              );
+              arrow.setLength(len, len * 0.35, len * 0.28);
+            }
+          }
+        }
+        refreshArrows();
 
         // === Animation ===
         const epochStart = new Date();
@@ -417,10 +531,12 @@ export function SolarSystem() {
             sun.rotation.y += (dt * TIME_SCALE_DAYS_PER_SEC / 25) * Math.PI * 2;
           }
 
-          // Refresh spacetime grid every ~30 frames (planets shift slowly)
+          // Refresh spacetime grid + vector field every ~30 frames
+          // (planets shift slowly relative to render rate)
           frameCount += 1;
           if (frameCount % 30 === 0) {
             deformGrid();
+            refreshArrows();
           }
 
           controls.update();
@@ -429,30 +545,53 @@ export function SolarSystem() {
         }
         raf = requestAnimationFrame(tick);
 
-        // Hover detection via raycaster
+        // Hover + click detection via raycaster against the Sun, planets,
+        // and the Moon. We rebuild the hit list each event (Moon mesh
+        // location moves but is not in planetMeshes).
         const raycaster = new THREE.Raycaster();
         const pointer = new THREE.Vector2();
-        function onMouseMove(e: MouseEvent) {
+        function pickSlug(e: MouseEvent): {
+          slug: string;
+          x: number;
+          y: number;
+        } | null {
           const rect = wrap!.getBoundingClientRect();
           pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
           pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
           raycaster.setFromCamera(pointer, camera);
-          const hits = raycaster.intersectObjects(
-            planetMeshes.map((p) => p.mesh),
-            false,
-          );
-          if (hits.length > 0) {
-            const ud = hits[0].object.userData as { planet?: PlanetDef };
-            setHoveredPlanet(ud.planet?.name ?? null);
-          } else {
-            setHoveredPlanet(null);
-          }
+          const targets: THREE.Object3D[] = [
+            sun,
+            ...planetMeshes.map((p) => p.mesh),
+          ];
+          const moon = scene.getObjectByName("moon");
+          if (moon) targets.push(moon);
+          const hits = raycaster.intersectObjects(targets, false);
+          if (hits.length === 0) return null;
+          const ud = hits[0].object.userData as { slug?: string };
+          if (!ud.slug) return null;
+          return { slug: ud.slug, x: e.clientX, y: e.clientY };
+        }
+
+        function onMouseMove(e: MouseEvent) {
+          const pick = pickSlug(e);
+          setHovered(pick);
+        }
+        function onClick(e: MouseEvent) {
+          const pick = pickSlug(e);
+          if (!pick) return;
+          // Flip the wait cursor on; NavigationFeedback clears it when
+          // the new pathname renders.
+          document.documentElement.classList.add("navigating");
+          setHovered(null);
+          router.push(`/solar-system/${pick.slug}`);
         }
         wrap!.addEventListener("mousemove", onMouseMove);
+        wrap!.addEventListener("click", onClick);
 
         // Cleanup hooked to the outer effect
         const cleanup = () => {
           wrap!.removeEventListener("mousemove", onMouseMove);
+          wrap!.removeEventListener("click", onClick);
         };
         (
           window as unknown as { __solarSystemCleanup?: () => void }
@@ -493,7 +632,7 @@ export function SolarSystem() {
   return (
     <div
       ref={wrapRef}
-      className="relative w-full h-full overflow-hidden"
+      className="relative w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
       style={{ background: "#040408" }}
     >
       {/* Loading state */}
@@ -504,14 +643,42 @@ export function SolarSystem() {
           </div>
         </div>
       ) : null}
-      {/* Hovered planet label */}
-      {hoveredPlanet ? (
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 pointer-events-none">
-          <div className="font-display text-[1.4rem] text-[var(--color-paper)] tracking-tight">
-            {hoveredPlanet}
-          </div>
-        </div>
+
+      {/* Planet hover popup with stats + trivia */}
+      {hovered ? (
+        <PlanetHoverPopup
+          slug={hovered.slug}
+          x={hovered.x}
+          y={hovered.y}
+        />
       ) : null}
+
+      {/* 4-dimensions-of-gravity legend in the bottom-left.
+          Pinned, low-key — so the curious can decode the four visual layers
+          without it competing with the scene. */}
+      <div className="absolute bottom-16 left-6 md:left-10 z-10 pointer-events-none max-w-[260px]">
+        <div className="small-caps text-[10px] tracking-[0.18em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)] mb-2">
+          Four faces of gravity
+        </div>
+        <ul className="mono text-[10px] leading-[1.55] text-[color-mix(in_oklab,var(--color-paper)_65%,transparent)] space-y-0.5">
+          <li>
+            <span style={{ color: "color-mix(in oklab, var(--color-paper) 85%, transparent)" }}>1.</span>{" "}
+            warped grid · spatial curvature
+          </li>
+          <li>
+            <span style={{ color: "color-mix(in oklab, var(--color-paper) 85%, transparent)" }}>2.</span>{" "}
+            arrows · vector field, ∇Φ
+          </li>
+          <li>
+            <span style={{ color: "color-mix(in oklab, var(--color-paper) 85%, transparent)" }}>3.</span>{" "}
+            rings · time dilation
+          </li>
+          <li>
+            <span style={{ color: "color-mix(in oklab, var(--color-paper) 85%, transparent)" }}>4.</span>{" "}
+            motion · time, the 4th dimension
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }
