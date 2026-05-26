@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import { CategoryIcon } from "./CategoryIcon";
 import { EventModal } from "./EventModal";
 import { FlagMarker } from "./FlagMarker";
+import { CountryHoverPopup } from "./CountryHoverPopup";
 import { accentVar, categoryTitle } from "@/lib/reflections";
 import { formatCoords, formatDate } from "@/lib/format";
 import type { GlobePoint } from "@/lib/globe-data";
@@ -34,6 +36,30 @@ export function Globe({
   const [textureReady, setTextureReady] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [hoveredCountry, setHoveredCountry] = useState<{
+    iso2: string;
+    name: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const router = useRouter();
+
+  const onFlagHover = useCallback(
+    (iso2: string, name: string, x: number, y: number) => {
+      setHoveredCountry({ iso2, name, x, y });
+    },
+    [],
+  );
+  const onFlagHoverEnd = useCallback(() => {
+    setHoveredCountry(null);
+  }, []);
+  const onFlagClick = useCallback(
+    (iso2: string) => {
+      setHoveredCountry(null);
+      router.push(`/country/${iso2}`);
+    },
+    [router],
+  );
 
   const activePoint = activeId
     ? points.find((p) => p.id === activeId) ?? null
@@ -514,12 +540,20 @@ export function Globe({
           </button>
         ))}
 
-        {/* Country flag chips — non-interactive ambient context.
+        {/* Country flag chips — interactive ambient context.
             Population-sorted in the data file so the per-frame projection
             loop's collision cull keeps the bigger countries on screen when
-            flags would overlap. */}
+            flags would overlap. Hover reveals today's news + stocks,
+            click opens the country detail page. */}
         {COUNTRY_LABELS.map((c) => (
-          <FlagMarker key={c.iso2} iso2={c.iso2} name={c.name} />
+          <FlagMarker
+            key={c.iso2}
+            iso2={c.iso2}
+            name={c.name}
+            onHover={onFlagHover}
+            onHoverEnd={onFlagHoverEnd}
+            onClick={onFlagClick}
+          />
         ))}
       </div>
 
@@ -537,6 +571,16 @@ export function Globe({
       {/* Tooltip */}
       {activePoint && !openPoint ? (
         <GlobeTooltip point={activePoint} />
+      ) : null}
+
+      {/* Country hover popup */}
+      {hoveredCountry && !openPoint ? (
+        <CountryHoverPopup
+          iso2={hoveredCountry.iso2}
+          name={hoveredCountry.name}
+          x={hoveredCountry.x}
+          y={hoveredCountry.y}
+        />
       ) : null}
 
       {/* Close-up modal */}

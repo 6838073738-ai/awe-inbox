@@ -356,7 +356,8 @@ a:focus-visible {
 /* Country flag chips — a parallel HTML overlay layer at country label points.
    Smaller and rounder than event markers, with a soft paper-tone ring and a
    dark shadow so they read against both the day (ocean blue) and night
-   (deep navy) hemispheres. Non-interactive — the event markers own clicks. */
+   (deep navy) hemispheres. Interactive: hover reveals a country popup,
+   click navigates to the country detail page. */
 .globe-flag {
   position: absolute;
   left: 0;
@@ -365,14 +366,29 @@ a:focus-visible {
   height: 17px;
   border-radius: 999px;
   overflow: hidden;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   border: 1px solid color-mix(in oklab, var(--color-paper) 55%, transparent);
   box-shadow:
     0 0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent),
     0 3px 8px color-mix(in oklab, var(--color-ink) 80%, transparent);
   background: var(--color-ink);
-  transition: opacity 200ms linear;
+  transition: opacity 200ms linear, transform 220ms var(--ease-breath),
+    box-shadow 220ms var(--ease-breath);
   z-index: 1;
+  padding: 0;
+  appearance: none;
+}
+.globe-flag:hover,
+.globe-flag:focus-visible {
+  outline: none;
+  transform: translate3d(var(--gx, 0), var(--gy, 0), 0) translate(-50%, -50%)
+    scale(1.45);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-paper) 75%, transparent),
+    0 0 14px color-mix(in oklab, var(--color-paper) 35%, transparent),
+    0 4px 14px color-mix(in oklab, var(--color-ink) 70%, transparent);
+  z-index: 5;
 }
 .globe-flag > svg {
   display: block;
@@ -383,6 +399,20 @@ a:focus-visible {
   .globe-flag {
     transition: none;
   }
+}
+
+/* Country hover popup — a tooltip-style card showing today's news +
+   stock movers for the hovered country flag. Same dark-glass aesthetic as
+   .globe-tooltip but a touch narrower and with sectioned content. */
+.country-popup {
+  padding: 0.85rem 1rem 0.95rem;
+  background: color-mix(in oklab, var(--color-ink) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in oklab, var(--color-paper) 14%, transparent);
+  border-radius: 4px;
+  box-shadow: 0 18px 50px
+    color-mix(in oklab, var(--color-ink) 80%, transparent);
 }
 
 /* Tooltip that appears above the active marker */
