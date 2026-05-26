@@ -112,34 +112,53 @@ export default async function PlanetPage({
         ← back to solar system
       </Link>
 
-      {/* Hero */}
-      <header className="mt-10 flex items-center gap-6 md:gap-10">
+      {/* Hero — full-width NASA photograph, gradient-faded into the page */}
+      <section
+        className="relative mt-10 overflow-hidden rounded-[4px]"
+        style={{
+          aspectRatio: "16 / 9",
+          boxShadow:
+            "0 0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent), 0 12px 40px color-mix(in oklab, var(--color-ink) 75%, transparent)",
+        }}
+      >
         <div
-          className="shrink-0 relative overflow-hidden"
+          className="absolute inset-0"
           style={{
-            width: 140,
-            height: 140,
-            borderRadius: 999,
-            backgroundImage: `url(${info.texture})`,
+            backgroundImage: `url(${info.heroImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            boxShadow:
-              "0 0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent), 0 12px 40px color-mix(in oklab, var(--color-ink) 75%, transparent)",
+            backgroundColor: "#000",
           }}
           aria-hidden="true"
         />
-        <div className="min-w-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, transparent 0%, transparent 45%, color-mix(in oklab, var(--color-ink) 88%, transparent) 100%)",
+          }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-4 md:px-8 md:pb-6">
           <h1
-            className="font-display text-[clamp(2rem,6vw,4.5rem)] leading-[1.04] tracking-[-0.018em]"
-            style={{ color: info.accent }}
+            className="font-display text-[clamp(2.2rem,6vw,4.6rem)] leading-[1.02] tracking-[-0.018em]"
+            style={{
+              color: info.accent,
+              textShadow:
+                "0 2px 14px color-mix(in oklab, var(--color-ink) 85%, transparent)",
+            }}
           >
             {info.name}
           </h1>
-          <p className="mt-3 prose-reflection text-[16px] leading-[1.55] text-[var(--color-paper)]">
-            {info.shortFact}
+          <p className="mt-2 mono text-[10px] tracking-[0.14em] text-[color-mix(in_oklab,var(--color-paper)_60%,transparent)]">
+            {info.heroCredit}
           </p>
         </div>
-      </header>
+      </section>
+
+      <p className="mt-7 prose-reflection text-[17px] leading-[1.55] text-[var(--color-paper)]">
+        {info.shortFact}
+      </p>
 
       {/* Stats grid */}
       <section className="mt-14">

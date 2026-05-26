@@ -35,8 +35,12 @@ export type PlanetInfo = {
   shortFact: string;
   /** 3-5 paragraphs of trivia for detail page */
   longTrivia: string[];
-  /** Path to the texture in /public — used on the detail-page hero */
+  /** Path to the surface texture in /public — used by the 3D Three.js sphere */
   texture: string;
+  /** Path to the NASA hero photograph in /public — used on the detail page */
+  heroImage: string;
+  /** Caption / credit line for the hero image */
+  heroCredit: string;
 };
 
 export const PLANET_DATA: Record<string, PlanetInfo> = {
@@ -47,6 +51,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     wikipediaSlug: "Sun",
     nasaFactSheet: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html",
     texture: "/textures/sun.jpg",
+    heroImage: "/svs/planets/sun.jpg",
+    heroCredit: "The Sun in white light · Jamie Cooper / NASA",
     stats: {
       diameterKm: 1_392_700,
       massEarths: 333_000,
@@ -76,6 +82,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html",
     texture: "/textures/mercury.jpg",
+    heroImage: "/svs/planets/mercury.jpg",
+    heroCredit: "Mercury in true colour · NASA MESSENGER mission",
     stats: {
       diameterKm: 4_879,
       massEarths: 0.055,
@@ -105,6 +113,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html",
     texture: "/textures/venus.jpg",
+    heroImage: "/svs/planets/venus.jpg",
+    heroCredit: "Venus, Mariner 10 approach · NASA / JPL",
     stats: {
       diameterKm: 12_104,
       massEarths: 0.815,
@@ -134,6 +144,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
     texture: "/textures/earth.jpg",
+    heroImage: "/svs/planets/earth.jpg",
+    heroCredit: "Earth from Meteosat-12 at the March equinox · EUMETSAT / NASA",
     stats: {
       diameterKm: 12_756,
       massEarths: 1,
@@ -163,6 +175,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
     texture: "/textures/mars.jpg",
+    heroImage: "/svs/planets/mars.png",
+    heroCredit: "Mars full disc · processed from MRO HiRISE / NASA-JPL imagery (Kevin M. Gill)",
     stats: {
       diameterKm: 6_792,
       massEarths: 0.107,
@@ -192,6 +206,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html",
     texture: "/textures/jupiter.jpg",
+    heroImage: "/svs/planets/jupiter.png",
+    heroCredit: "Jupiter, Hubble OPAL 2024 · NASA / ESA / STScI",
     stats: {
       diameterKm: 142_984,
       massEarths: 317.83,
@@ -221,6 +237,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html",
     texture: "/textures/saturn.jpg",
+    heroImage: "/svs/planets/saturn.jpg",
+    heroCredit: "Saturn during equinox · NASA / JPL / Cassini",
     stats: {
       diameterKm: 120_536,
       massEarths: 95.16,
@@ -250,6 +268,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uranusfact.html",
     texture: "/textures/uranus.jpg",
+    heroImage: "/svs/planets/uranus.png",
+    heroCredit: "Uranus, colour-calibrated from Voyager 2 · NASA / JPL",
     stats: {
       diameterKm: 51_118,
       massEarths: 14.54,
@@ -279,6 +299,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptunefact.html",
     texture: "/textures/neptune.jpg",
+    heroImage: "/svs/planets/neptune.png",
+    heroCredit: "Neptune, colour-calibrated from Voyager 2 · NASA / JPL",
     stats: {
       diameterKm: 49_528,
       massEarths: 17.15,
@@ -308,6 +330,8 @@ export const PLANET_DATA: Record<string, PlanetInfo> = {
     nasaFactSheet:
       "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
     texture: "/textures/moon.jpg",
+    heroImage: "/svs/planets/moon.jpg",
+    heroCredit: "Full moon over Earth · NASA",
     stats: {
       diameterKm: 3_475,
       massEarths: 0.0123,

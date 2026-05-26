@@ -128,45 +128,80 @@ async function Hero({
 }) {
   const rc = await fetchRestCountries(iso2);
   return (
-    <header className="mt-10 flex items-center gap-6 md:gap-8">
-      {flagSvg ? (
+    <section className="mt-10">
+      {/* NASA GIBS satellite banner — real MODIS Terra true-colour imagery
+          of this country, fetched via /api/country/[iso2]/imagery and
+          cached at the edge for 12 hours. */}
+      <div
+        className="relative overflow-hidden rounded-[4px]"
+        style={{
+          aspectRatio: "16 / 7",
+          boxShadow:
+            "0 0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent), 0 12px 36px color-mix(in oklab, var(--color-ink) 70%, transparent)",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/api/country/${iso2}/imagery`}
+          alt={`NASA satellite imagery centred on ${rc?.name ?? fallbackName}`}
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ background: "#0b0b0c" }}
+        />
         <div
-          className="shrink-0"
+          className="absolute inset-0"
           style={{
-            width: 86,
-            height: 86,
-            borderRadius: 999,
-            overflow: "hidden",
-            border:
-              "1.5px solid color-mix(in oklab, var(--color-paper) 50%, transparent)",
-            boxShadow:
-              "0 0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent), 0 8px 26px color-mix(in oklab, var(--color-ink) 70%, transparent)",
+            background:
+              "linear-gradient(180deg, color-mix(in oklab, var(--color-ink) 20%, transparent) 0%, transparent 30%, color-mix(in oklab, var(--color-ink) 88%, transparent) 100%)",
           }}
-          dangerouslySetInnerHTML={{ __html: flagSvg }}
           aria-hidden="true"
         />
-      ) : null}
-      <div className="min-w-0">
-        <h1 className="font-display text-[clamp(2rem,5vw,3.6rem)] leading-[1.05] tracking-[-0.018em] text-[var(--color-paper)]">
-          {rc?.name ?? fallbackName}
-        </h1>
-        {rc?.officialName && rc.officialName !== rc.name ? (
-          <p className="mt-2 mono text-[12px] tracking-[0.08em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)]">
-            {rc.officialName}
-          </p>
-        ) : null}
-        {rc ? (
-          <p className="mt-3 mono text-[12px] tracking-[0.08em] text-[color-mix(in_oklab,var(--color-paper)_65%,transparent)]">
-            {[rc.capital, rc.subregion ?? rc.region]
-              .filter(Boolean)
-              .join(" · ")}
-            {rc.population
-              ? ` · pop ${fmtNumber(rc.population)}`
-              : ""}
-          </p>
-        ) : null}
+        <div className="absolute bottom-3 right-4 mono text-[10px] tracking-[0.14em] text-[color-mix(in_oklab,var(--color-paper)_60%,transparent)]">
+          NASA GIBS · MODIS Terra
+        </div>
       </div>
-    </header>
+
+      <header className="mt-6 flex items-center gap-6 md:gap-8">
+        {flagSvg ? (
+          <div
+            className="shrink-0"
+            style={{
+              width: 86,
+              height: 86,
+              borderRadius: 999,
+              overflow: "hidden",
+              border:
+                "1.5px solid color-mix(in oklab, var(--color-paper) 50%, transparent)",
+              boxShadow:
+                "0 0 0 1px color-mix(in oklab, var(--color-ink) 90%, transparent), 0 8px 26px color-mix(in oklab, var(--color-ink) 70%, transparent)",
+            }}
+            dangerouslySetInnerHTML={{ __html: flagSvg }}
+            aria-hidden="true"
+          />
+        ) : null}
+        <div className="min-w-0">
+          <h1 className="font-display text-[clamp(2rem,5vw,3.6rem)] leading-[1.05] tracking-[-0.018em] text-[var(--color-paper)]">
+            {rc?.name ?? fallbackName}
+          </h1>
+          {rc?.officialName && rc.officialName !== rc.name ? (
+            <p className="mt-2 mono text-[12px] tracking-[0.08em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)]">
+              {rc.officialName}
+            </p>
+          ) : null}
+          {rc ? (
+            <p className="mt-3 mono text-[12px] tracking-[0.08em] text-[color-mix(in_oklab,var(--color-paper)_65%,transparent)]">
+              {[rc.capital, rc.subregion ?? rc.region]
+                .filter(Boolean)
+                .join(" · ")}
+              {rc.population
+                ? ` · pop ${fmtNumber(rc.population)}`
+                : ""}
+            </p>
+          ) : null}
+        </div>
+      </header>
+    </section>
   );
 }
 
