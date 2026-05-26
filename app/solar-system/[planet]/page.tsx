@@ -50,6 +50,8 @@ function fmtRotation(h: number): string {
 
 const SECTION_LABEL =
   "small-caps text-[11px] tracking-[0.18em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)] mb-5";
+const FOOTNOTE =
+  "mono text-[11px] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)]";
 const SOURCE_LINK =
   "underline decoration-[color-mix(in_oklab,var(--color-paper)_45%,transparent)] hover:decoration-[var(--color-paper)] transition-[text-decoration-color] duration-200";
 
@@ -235,6 +237,43 @@ export default async function PlanetPage({
           </a>
         </p>
       </section>
+
+      {/* Live SDO imagery — only on the Sun page. The 171 Å view shows the
+          quiet corona and active regions; the image refreshes at the
+          /api/sdo-sun edge cache every 10 minutes. */}
+      {info.slug === "sun" ? (
+        <section className="mt-14">
+          <h2 className={SECTION_LABEL}>Live from the Sun</h2>
+          <div className="relative overflow-hidden rounded-[4px] border border-[color-mix(in_oklab,var(--color-paper)_15%,transparent)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/api/sdo-sun"
+              alt="Latest full-disc image of the Sun at 171 Å from NASA's Solar Dynamics Observatory"
+              width={2048}
+              height={2048}
+              loading="lazy"
+              decoding="async"
+              className="block w-full h-auto"
+              style={{ background: "#000" }}
+            />
+          </div>
+          <p className={`mt-3 ${FOOTNOTE}`}>
+            Latest 171 Å full-disc capture from{" "}
+            <a
+              href="https://sdo.gsfc.nasa.gov/data/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={SOURCE_LINK}
+            >
+              NASA Solar Dynamics Observatory
+            </a>
+            . Refreshed at the edge every ~10 minutes. Iron-9 emission lines
+            at 171 Å show the upper transition region and quiet corona
+            (~600,000 °C) — the loops are magnetic field structures arcing
+            from one footpoint to the other.
+          </p>
+        </section>
+      ) : null}
 
       {/* Trivia */}
       <section className="mt-14">

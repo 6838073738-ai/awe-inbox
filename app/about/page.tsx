@@ -9,7 +9,36 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main id="main" className="relative w-full px-6 py-32 md:px-20 md:py-48">
+    <main id="main" className="relative w-full">
+      {/* Full-bleed hero banner — NASA Earth at Night (Suomi NPP / VIIRS,
+          2012 composite). Gradient fade at the bottom so the article text
+          underneath stays readable. Public domain — credited in /colophon. */}
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio: "16 / 7" }}
+        aria-hidden="true"
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "url(/svs/black-marble-3600.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center 38%",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, color-mix(in oklab, var(--color-ink) 25%, transparent) 0%, color-mix(in oklab, var(--color-ink) 0%, transparent) 35%, color-mix(in oklab, var(--color-ink) 78%, transparent) 85%, var(--color-ink) 100%)",
+          }}
+        />
+        <div className="absolute bottom-6 right-6 md:bottom-10 md:right-10 mono text-[10px] tracking-[0.14em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)] z-10 pointer-events-none">
+          NASA Earth at Night · Suomi NPP / VIIRS
+        </div>
+      </div>
+
+      <div className="relative w-full px-6 py-20 md:px-20 md:py-32">
       <article className="mx-auto w-full max-w-[42rem]">
         <div className="small-caps mb-10 text-[var(--color-faded)]">
           The manifesto
@@ -131,6 +160,7 @@ export default function AboutPage() {
           </Link>
         </div>
       </article>
+      </div>
     </main>
   );
 }

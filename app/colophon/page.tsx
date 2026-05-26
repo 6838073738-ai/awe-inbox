@@ -52,6 +52,29 @@ export default function ColophonPage() {
             satellites, with VIIRS aboard Suomi NPP as a fallback.
           </p>
           <p>
+            The Earth-at-night image on this page comes from NASA&apos;s{" "}
+            <a
+              href="https://earthobservatory.nasa.gov/features/NightLights"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Earth Observatory
+            </a>{" "}
+            Black Marble 2012 composite (Suomi NPP / VIIRS day-night band).
+            The live Sun imagery on the{" "}
+            <Link href="/solar-system/sun">Sun</Link> page is the latest
+            171 Å full-disc capture from the{" "}
+            <a
+              href="https://sdo.gsfc.nasa.gov/data/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              NASA Solar Dynamics Observatory
+            </a>{" "}
+            (AIA instrument), proxied through this site with a 10-minute
+            edge cache. Both are NASA public-domain works.
+          </p>
+          <p>
             City data — used by the population-proximity filter that
             distinguishes reward-awe from threat-awe — comes from{" "}
             <a
