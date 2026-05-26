@@ -47,6 +47,10 @@ CLAUDE.md
 canvas-*.png
 canvas-*.jpg
 world-*.jpg
+*.mp4
+*.webm
 
 # OS
 Thumbs.db
+
+.vercel

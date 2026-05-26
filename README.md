@@ -35,6 +35,8 @@ tab.
 | [NASA EONET v3](https://eonet.gsfc.nasa.gov/api/v3/)      | Active natural events worldwide       | 24 h    |
 | [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/)   | Blue Marble texture + per-event tiles | 30 d    |
 | [GeoNames cities1000](https://www.geonames.org)           | Population-proximity filter (CC-BY 4) | static  |
+| [Natural Earth Vector 110m](https://www.naturalearthdata.com) | Country borders + flag label points (public domain) | static  |
+| [`country-flag-icons`](https://www.npmjs.com/package/country-flag-icons) | Per-country SVG flags | static  |
 | `lib/conflicts.ts`                                        | Active armed conflicts (curated)      | static  |
 
 The Blue Marble texture and EONET feed are proxied through Next.js routes for
@@ -45,9 +47,10 @@ data.
 
 ```bash
 npm install
-node scripts/build-cities.mjs   # one-time: downloads + filters cities.json
-npm run dev                     # http://localhost:3000
-npm run build && npm start      # production build
+node scripts/build-cities.mjs      # one-time: downloads + filters cities.json
+node scripts/build-countries.mjs   # one-time: country borders + flag label points
+npm run dev                        # http://localhost:3000
+npm run build && npm start         # production build
 ```
 
 You will need Node 20+ (Next 16 requirement).

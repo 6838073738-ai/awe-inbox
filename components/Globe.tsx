@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { CategoryIcon } from "./CategoryIcon";
 import { EventModal } from "./EventModal";
+import { FlagMarker } from "./FlagMarker";
 import { accentVar, categoryTitle } from "@/lib/reflections";
 import { formatCoords, formatDate } from "@/lib/format";
 import type { GlobePoint } from "@/lib/globe-data";
+import { buildCountryBordersGeometry } from "@/lib/country-borders";
+import { COUNTRY_LABELS, getFlagSvg } from "@/lib/country-flags";
 
 function latLngToVec3(lat: number, lng: number, r: number) {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -204,6 +207,21 @@ export function Globe({
     }
     globe.add(meridianGroup);
 
+    // Country borders — all ~170 countries drawn as a single LineSegments
+    // mesh sitting at r=1.002, just above the texture so they never z-fight
+    // with the day/night shader. Attached to the globe group so they spin
+    // with it. Opacity is low (22%) — borders are background context, not
+    // the focus.
+    const bordersGeom = buildCountryBordersGeometry();
+    const bordersMat = new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false,
+    });
+    const borders = new THREE.LineSegments(bordersGeom, bordersMat);
+    globe.add(borders);
+
     // Initial sun position from real UTC. The subsolar point moves ~15°/hour
     // west, so for a several-minute visit this is effectively static.
     function computeSunDirection(date: Date): THREE.Vector3 {
@@ -286,12 +304,31 @@ export function Globe({
       vec: latLngToVec3(p.lat, p.lng, 1.012),
     }));
 
+    // Pre-compute per-country sphere positions. Flags sit at r=1.013, a hair
+    // above event markers, so a flag and a marker at the same coordinates
+    // don't visually overlap — the marker still wins because it's painted
+    // after the flag in the DOM (later z-order) AND has higher pixel weight.
+    // Largest-population-first so the collision filter at draw time keeps the
+    // big countries when two flags overlap.
+    const flagsWithFlagsAvailable = COUNTRY_LABELS.filter(
+      (c) => getFlagSvg(c.iso2) !== null,
+    );
+    const overlayFlags = flagsWithFlagsAvailable.map((c) => ({
+      iso2: c.iso2,
+      vec: latLngToVec3(c.lat, c.lng, 1.013),
+    }));
+
     // We re-query the DOM each frame so React reconciliation never leaves
     // us holding stale element references. 60 events × querySelector is
     // cheap (<0.1 ms) compared to the rest of the rAF tick.
     function getButton(id: string): HTMLElement | null {
       return overlay!.querySelector<HTMLElement>(
         `[data-event-id="${CSS.escape(id)}"]`,
+      );
+    }
+    function getFlagEl(iso2: string): HTMLElement | null {
+      return overlay!.querySelector<HTMLElement>(
+        `[data-flag-iso="${CSS.escape(iso2)}"]`,
       );
     }
 
@@ -323,6 +360,55 @@ export function Globe({
       const w = wrap!.clientWidth;
       const h = wrap!.clientHeight;
       const EDGE = 22; // keep marker disc fully inside the viewable area
+
+      // 1. Country flags first — they're underneath everything else, and we
+      //    need to know which flag screen positions are claimed before we
+      //    decide which (lower-population) flags to hide via collision cull.
+      //    flagsPlaced accumulates screen-space x/y of already-visible flags;
+      //    a candidate flag closer than FLAG_MIN_GAP to any of them is hidden.
+      const FLAG_MIN_GAP = 28;
+      const FLAG_EDGE = 12;
+      const flagsPlaced: number[] = []; // pairs of (x, y)
+      for (const f of overlayFlags) {
+        const el = getFlagEl(f.iso2);
+        if (!el) continue;
+        worldVec.copy(f.vec).applyMatrix4(globe.matrixWorld);
+        cameraToPoint.copy(worldVec).sub(camera.position).normalize();
+        pointNormal.copy(worldVec).normalize();
+        const facing = pointNormal.dot(cameraToPoint) < -0.05;
+        projectedVec.copy(worldVec).project(camera);
+        const x = (projectedVec.x * 0.5 + 0.5) * w;
+        const y = (-projectedVec.y * 0.5 + 0.5) * h;
+        const inBounds =
+          x >= FLAG_EDGE &&
+          x <= w - FLAG_EDGE &&
+          y >= FLAG_EDGE &&
+          y <= h - FLAG_EDGE;
+
+        let visible = facing && inBounds;
+        if (visible) {
+          // Collision cull — overlayFlags is sorted by population desc, so
+          // earlier (larger) flags claim their pixels first and later ones
+          // hide if too close.
+          for (let i = 0; i < flagsPlaced.length; i += 2) {
+            const dx = x - flagsPlaced[i];
+            const dy = y - flagsPlaced[i + 1];
+            if (dx * dx + dy * dy < FLAG_MIN_GAP * FLAG_MIN_GAP) {
+              visible = false;
+              break;
+            }
+          }
+          if (visible) {
+            flagsPlaced.push(x, y);
+          }
+        }
+
+        el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+        el.style.opacity = visible ? "1" : "0";
+      }
+
+      // 2. Event markers on top — kept after flags so when a marker and a
+      //    flag share the same coordinates the marker wins the visual.
       for (const op of overlayPoints) {
         const btn = getButton(op.id);
         if (!btn) continue;
@@ -383,6 +469,8 @@ export function Globe({
           (obj.material as THREE.Material).dispose();
         }
       });
+      bordersGeom.dispose();
+      bordersMat.dispose();
       renderer.dispose();
       if (renderer.domElement.parentElement === wrap) {
         wrap!.removeChild(renderer.domElement);
@@ -424,6 +512,14 @@ export function Globe({
               <CategoryIcon category={p.category} size={18} />
             </span>
           </button>
+        ))}
+
+        {/* Country flag chips — non-interactive ambient context.
+            Population-sorted in the data file so the per-frame projection
+            loop's collision cull keeps the bigger countries on screen when
+            flags would overlap. */}
+        {COUNTRY_LABELS.map((c) => (
+          <FlagMarker key={c.iso2} iso2={c.iso2} name={c.name} />
         ))}
       </div>
 
