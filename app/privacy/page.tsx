@@ -33,9 +33,34 @@ export default function PrivacyPage() {
         </h2>
         <div className="prose-reflection mt-8">
           <p>
-            Nothing personal. We do not use analytics services, advertising
-            trackers, fingerprinting, or third-party cookies. We do not assign
-            you a user ID. We do not have an account system.
+            This site uses two analytics services to measure traffic:{" "}
+            <a
+              href="https://vercel.com/docs/analytics"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Vercel Web Analytics
+            </a>{" "}
+            (cookieless, no fingerprinting, measures pageviews and Core Web
+            Vitals only) and{" "}
+            <a
+              href="https://policies.google.com/technologies/partner-sites"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google Analytics 4
+            </a>{" "}
+            (sets a couple of <code>_ga*</code> cookies to count returning
+            visitors and aggregate session data). Both run with IP-anonymisation
+            enabled and with Google Signals + ad-personalisation explicitly
+            turned off in our configuration. If your browser sends a{" "}
+            <em>Do-Not-Track</em> signal we skip loading Google Analytics
+            entirely.
+          </p>
+          <p>
+            Beyond that, we don&apos;t use advertising trackers, fingerprinting,
+            heatmaps, session replay, or A/B testing tools. We don&apos;t assign
+            you a user ID. We don&apos;t have an account system.
           </p>
           <p>
             Our hosting provider (Vercel) automatically receives standard
@@ -52,10 +77,10 @@ export default function PrivacyPage() {
         <div className="prose-reflection mt-8">
           <p>
             We do not run advertising. We do not sell or share data. We do not
-            use behavioral analytics, heatmaps, session replay, or A/B testing
-            tools. We do not embed third-party scripts from social networks. We
-            do not place cookies that require consent under GDPR or ePrivacy
-            rules.
+            use behavioural heatmaps, session replay, or A/B testing tools. We
+            do not embed third-party scripts from social networks. The Google
+            Analytics cookies set are technical/measurement cookies; we do not
+            use them for advertising or remarketing.
           </p>
         </div>
 

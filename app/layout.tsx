@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { fraunces, interTight, jetbrainsMono } from "@/lib/fonts";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { NavigationFeedback } from "@/components/NavigationFeedback";
+import { Analytics } from "@/components/Analytics";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aweinbox.example";
@@ -77,6 +78,7 @@ export default function RootLayout({
           Skip to content
         </a>
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        <Analytics />
       </body>
     </html>
   );

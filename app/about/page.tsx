@@ -115,9 +115,10 @@ export default function AboutPage() {
             ritual.
           </p>
           <p>
-            Awe Inbox has no notifications, no metrics, no infinite scroll, no
-            engagement loop. It does not want your time. It wants to give you
-            back a little of your own.
+            Awe Inbox has no notifications, no infinite scroll, no engagement
+            loop. It does not want your time. It wants to give you back a
+            little of your own. (We count pageviews — see{" "}
+            <Link href="/privacy">privacy</Link> — but nothing more.)
           </p>
         </div>
 

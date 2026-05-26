@@ -17,16 +17,31 @@ const isProd = process.env.NODE_ENV === "production";
  *   - https://gibs.earthdata.nasa.gov in img-src + connect-src — the
  *     satellite tiles and the proxied world texture both originate there.
  */
+// Google Analytics + Google Tag Manager + Vercel Analytics endpoints.
+// GA loads its gtag.js from googletagmanager.com and beacons to
+// google-analytics.com (region.analytics.google.com for newer setups).
+// Vercel Analytics loads its script from /_vercel/insights, served same-
+// origin via Vercel's edge, so no CSP change is needed for that side.
+const GA_SCRIPT_HOSTS = [
+  "https://www.googletagmanager.com",
+];
+const GA_CONNECT_HOSTS = [
+  "https://www.google-analytics.com",
+  "https://*.analytics.google.com",
+  "https://*.google-analytics.com",
+];
+const GA_IMG_HOSTS = ["https://www.google-analytics.com"];
+
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  `script-src 'self' 'unsafe-inline' ${GA_SCRIPT_HOSTS.join(" ")}${isProd ? "" : " 'unsafe-eval'"}`,
   // Block inline event-handler attributes (onclick="...") at the CSP level.
   // We never use them — they belong to the React pre-history.
   "script-src-attr 'none'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://gibs.earthdata.nasa.gov",
+  `img-src 'self' data: blob: https://gibs.earthdata.nasa.gov ${GA_IMG_HOSTS.join(" ")}`,
   "font-src 'self' data:",
-  "connect-src 'self' https://eonet.gsfc.nasa.gov https://gibs.earthdata.nasa.gov",
+  `connect-src 'self' https://eonet.gsfc.nasa.gov https://gibs.earthdata.nasa.gov ${GA_CONNECT_HOSTS.join(" ")}`,
   "worker-src 'self' blob:",
   "frame-src 'none'",
   "frame-ancestors 'none'",

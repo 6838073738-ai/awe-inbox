@@ -208,6 +208,27 @@ export default function ColophonPage() {
             .
           </p>
           <p>
+            Traffic is measured by{" "}
+            <a
+              href="https://vercel.com/docs/analytics"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Vercel Web Analytics
+            </a>{" "}
+            (cookieless, GDPR-friendly) and{" "}
+            <a
+              href="https://policies.google.com/technologies/partner-sites"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google Analytics 4
+            </a>
+            , both configured with IP-anonymisation and no ad-personalisation
+            signals. The full disclosure lives on{" "}
+            <Link href="/privacy">privacy</Link>.
+          </p>
+          <p>
             Built with{" "}
             <a
               href="https://nextjs.org"
