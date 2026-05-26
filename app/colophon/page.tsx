@@ -69,7 +69,93 @@ export default function ColophonPage() {
             >
               Creative Commons Attribution 4.0
             </a>
-            .
+            . Country borders and label points are from{" "}
+            <a
+              href="https://www.naturalearthdata.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Natural Earth
+            </a>{" "}
+            (public domain). Country flags are rendered from the{" "}
+            <a
+              href="https://www.npmjs.com/package/country-flag-icons"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              country-flag-icons
+            </a>{" "}
+            package.
+          </p>
+          <p>
+            On the <Link href="/solar-system">Solar System</Link> page,
+            planet, Sun, Moon, and starfield textures are by{" "}
+            <a
+              href="https://www.solarsystemscope.com/textures/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Solar System Scope
+            </a>{" "}
+            (Tomas Slavinskas, CC-BY 4.0). Planetary positions are computed
+            with{" "}
+            <a
+              href="https://github.com/cosinekitty/astronomy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              astronomy-engine
+            </a>
+            , a JavaScript port of NASA JPL&apos;s ephemeris calculations.
+            The warped grid beneath the planets is a visualisation of
+            gravitational potential — a simplified, non-relativistic
+            stand-in for spacetime curvature in the spirit of Einstein&apos;s
+            rubber-sheet metaphor.
+          </p>
+          <p>
+            Country detail pages cite{" "}
+            <a
+              href="https://en.wikipedia.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Wikipedia
+            </a>
+            ,{" "}
+            <a
+              href="https://data.worldbank.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              World Bank Open Data
+            </a>
+            , and{" "}
+            <a
+              href="https://restcountries.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              REST Countries
+            </a>
+            . Today&apos;s headlines are surfaced via the{" "}
+            <a
+              href="https://www.gdeltproject.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GDELT Project
+            </a>{" "}
+            and filtered to a curated allowlist of reputable English-language
+            outlets. Stock quotes are pulled from Yahoo Finance via the
+            unofficial{" "}
+            <a
+              href="https://github.com/gadicc/node-yahoo-finance2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              yahoo-finance2
+            </a>{" "}
+            package and are illustrative — not investment advice.
           </p>
           <p>
             Typography is set in{" "}

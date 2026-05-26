@@ -38,6 +38,12 @@ export default async function Home() {
 
         <nav className="mono flex items-center gap-x-6 text-[0.72rem] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)]">
           <Link
+            href="/solar-system"
+            className="hover:text-[var(--color-paper)] transition-colors duration-200"
+          >
+            Solar&nbsp;System
+          </Link>
+          <Link
             href="/about"
             className="hover:text-[var(--color-paper)] transition-colors duration-200"
           >
