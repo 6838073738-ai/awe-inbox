@@ -11,11 +11,12 @@ export const runtime = "nodejs";
 export const revalidate = 3600;
 
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: { params: Promise<{ iso2: string }> },
 ) {
   const { iso2: raw } = await ctx.params;
   const iso2 = raw.toUpperCase();
+  const debug = new URL(req.url).searchParams.has("debug");
 
   const meta = COUNTRY_LABELS.find((c) => c.iso2 === iso2);
   if (!meta) {
@@ -23,6 +24,35 @@ export async function GET(
       { error: "unknown_country", iso2 },
       { status: 404 },
     );
+  }
+
+  let gdeltDebug: unknown = null;
+  if (debug) {
+    // Bypass our wrapper and call GDELT directly so we can see what the
+    // server-side outbound is actually receiving. Helps diagnose rate limits
+    // and IP-based blocks visible only from Vercel's egress.
+    const q = `"${meta.name}" sourcelang:eng`;
+    const url =
+      `https://api.gdeltproject.org/api/v2/doc/doc` +
+      `?query=${encodeURIComponent(q)}&format=json&maxrecords=10&sort=hybridrel&timespan=24h`;
+    try {
+      const r = await fetch(url, {
+        cache: "no-store",
+        headers: {
+          "user-agent": "awe-inbox/1.0 (https://awe-inbox.vercel.app)",
+        },
+      });
+      const text = await r.text();
+      gdeltDebug = {
+        url,
+        status: r.status,
+        contentType: r.headers.get("content-type"),
+        bodyLength: text.length,
+        bodyPreview: text.slice(0, 400),
+      };
+    } catch (e) {
+      gdeltDebug = { error: String(e) };
+    }
   }
 
   const [news, stocks] = await Promise.all([
@@ -36,12 +66,14 @@ export async function GET(
       name: meta.name,
       news,
       stocks,
+      ...(debug ? { _debug: gdeltDebug } : {}),
       generatedAt: new Date().toISOString(),
     },
     {
       headers: {
-        "cache-control":
-          "public, s-maxage=3600, stale-while-revalidate=86400",
+        "cache-control": debug
+          ? "no-store"
+          : "public, s-maxage=3600, stale-while-revalidate=86400",
       },
     },
   );

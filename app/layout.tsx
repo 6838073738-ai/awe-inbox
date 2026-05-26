@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { fraunces, interTight, jetbrainsMono } from "@/lib/fonts";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
+import { NavigationFeedback } from "@/components/NavigationFeedback";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://aweinbox.example";
@@ -71,6 +72,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://gibs.earthdata.nasa.gov" />
       </head>
       <body>
+        <NavigationFeedback />
         <a href="#main" className="skip-link">
           Skip to content
         </a>

@@ -47,8 +47,15 @@ export function Globe({
   const onFlagHover = useCallback(
     (iso2: string, name: string, x: number, y: number) => {
       setHoveredCountry({ iso2, name, x, y });
+      // Prefetch the country page route so the click→render feels instant.
+      // Next.js de-dupes this internally; cheap to call repeatedly.
+      try {
+        router.prefetch(`/country/${iso2}`);
+      } catch {
+        // older Next versions throw on invalid; not critical here
+      }
     },
-    [],
+    [router],
   );
   const onFlagHoverEnd = useCallback(() => {
     setHoveredCountry(null);
@@ -56,6 +63,11 @@ export function Globe({
   const onFlagClick = useCallback(
     (iso2: string) => {
       setHoveredCountry(null);
+      // Flip the wait cursor on immediately. NavigationFeedback clears it
+      // when the new pathname renders.
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.add("navigating");
+      }
       router.push(`/country/${iso2}`);
     },
     [router],
@@ -344,18 +356,30 @@ export function Globe({
       vec: latLngToVec3(c.lat, c.lng, 1.013),
     }));
 
-    // We re-query the DOM each frame so React reconciliation never leaves
-    // us holding stale element references. 60 events × querySelector is
-    // cheap (<0.1 ms) compared to the rest of the rAF tick.
+    // Cache element refs in a Map so each frame's projection loop skips
+    // ~200 querySelector calls. Refs are looked up lazily on first miss
+    // (React may not have committed them by the first tick) and never
+    // invalidated — the elements live as long as this useEffect closure,
+    // and the `points` / COUNTRY_LABELS arrays are stable references.
+    const buttonRefs = new Map<string, HTMLElement>();
+    const flagRefs = new Map<string, HTMLElement>();
     function getButton(id: string): HTMLElement | null {
-      return overlay!.querySelector<HTMLElement>(
+      const cached = buttonRefs.get(id);
+      if (cached && cached.isConnected) return cached;
+      const el = overlay!.querySelector<HTMLElement>(
         `[data-event-id="${CSS.escape(id)}"]`,
       );
+      if (el) buttonRefs.set(id, el);
+      return el;
     }
     function getFlagEl(iso2: string): HTMLElement | null {
-      return overlay!.querySelector<HTMLElement>(
+      const cached = flagRefs.get(iso2);
+      if (cached && cached.isConnected) return cached;
+      const el = overlay!.querySelector<HTMLElement>(
         `[data-flag-iso="${CSS.escape(iso2)}"]`,
       );
+      if (el) flagRefs.set(iso2, el);
+      return el;
     }
 
     // Reusable temp vectors so we don't allocate every frame

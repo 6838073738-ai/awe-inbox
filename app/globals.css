@@ -531,3 +531,35 @@ a:focus-visible {
       color-mix(in oklab, var(--accent) 28%, var(--color-mid)) 360deg
     );
 }
+
+/* Navigation in-flight cursor — applied by <NavigationFeedback> at the
+   instant any in-app link or programmatic router.push fires, and cleared
+   the moment the new pathname renders. Uses `progress` (busy-but-still-
+   clickable) rather than `wait` so the page doesn't feel locked. */
+html.navigating,
+html.navigating *,
+html.navigating *::before,
+html.navigating *::after {
+  cursor: progress !important;
+}
+
+/* Skeleton shimmer for /country/[iso2] loading state */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-paper) 5%, var(--color-ink)) 0%,
+    color-mix(in oklab, var(--color-paper) 11%, var(--color-ink)) 50%,
+    color-mix(in oklab, var(--color-paper) 5%, var(--color-ink)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s var(--ease-breath) infinite;
+}
+@keyframes skeleton-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
