@@ -671,8 +671,9 @@ export function SolarSystem() {
 
       {/* 4-dimensions-of-gravity legend in the bottom-left.
           Pinned, low-key — so the curious can decode the four visual layers
-          without it competing with the scene. */}
-      <div className="absolute bottom-16 left-6 md:left-10 z-10 pointer-events-none max-w-[260px]">
+          without it competing with the scene. Hidden on small screens where
+          the scene + pause button + footer already pack the viewport. */}
+      <div className="absolute bottom-16 left-6 md:left-10 z-10 pointer-events-none max-w-[260px] hidden md:block">
         <div className="small-caps text-[10px] tracking-[0.18em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)] mb-2">
           Four faces of gravity
         </div>

@@ -12,14 +12,14 @@ export default function SolarSystemPage() {
   return (
     <main className="relative w-full" style={{ height: "100dvh" }}>
       {/* Quiet top bar — back link + title */}
-      <header className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 md:px-10 py-5 pointer-events-none">
+      <header className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between gap-3 px-4 md:px-10 py-4 md:py-5 pointer-events-none">
         <Link
           href="/"
-          className="mono text-[12px] tracking-[0.12em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)] hover:text-[var(--color-paper)] transition-colors pointer-events-auto"
+          className="mono text-[11px] md:text-[12px] tracking-[0.12em] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)] hover:text-[var(--color-paper)] transition-colors pointer-events-auto whitespace-nowrap"
         >
           ← back to globe
         </Link>
-        <span className="font-display text-[15px] tracking-[-0.005em] text-[color-mix(in_oklab,var(--color-paper)_75%,transparent)] pointer-events-auto select-none">
+        <span className="font-display text-[14px] md:text-[15px] tracking-[-0.005em] text-[color-mix(in_oklab,var(--color-paper)_75%,transparent)] pointer-events-auto select-none">
           Solar System
         </span>
         <span className="mono text-[10px] tracking-[0.14em] text-[color-mix(in_oklab,var(--color-paper)_38%,transparent)] pointer-events-auto select-none hidden md:block">
@@ -30,8 +30,9 @@ export default function SolarSystemPage() {
       {/* The scene fills the viewport */}
       <SolarSystem />
 
-      {/* Quiet attribution at the bottom */}
-      <footer className="absolute bottom-0 left-0 right-0 z-10 px-6 md:px-10 py-4 pointer-events-none">
+      {/* Quiet attribution at the bottom. Hidden on small screens — pause
+          button + canvas already use that real estate. */}
+      <footer className="absolute bottom-0 left-0 right-0 z-10 px-6 md:px-10 py-4 pointer-events-none hidden md:block">
         <p className="mono text-[10px] tracking-[0.1em] text-[color-mix(in_oklab,var(--color-paper)_38%,transparent)] pointer-events-auto select-none">
           Planet textures · Solar System Scope (CC-BY 4.0) ·{" "}
           <Link href="/colophon" className="underline decoration-transparent hover:decoration-current transition-colors">

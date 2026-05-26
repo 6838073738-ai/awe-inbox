@@ -23,23 +23,23 @@ export default async function Home() {
   return (
     <main id="main" className="flex h-[100dvh] w-full flex-col overflow-hidden">
       {/* Header */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-4 md:px-10 md:py-5">
-        <div className="flex items-baseline gap-3">
+      <header className="relative z-20 flex items-center justify-between gap-3 px-4 py-3 md:px-10 md:py-5">
+        <div className="flex items-baseline gap-3 min-w-0">
           <Link
             href="/"
-            className="font-display text-[1.05rem] tracking-[-0.01em] text-[var(--color-paper)]"
+            className="font-display text-[1.05rem] tracking-[-0.01em] text-[var(--color-paper)] whitespace-nowrap"
           >
             Awe&nbsp;Inbox
           </Link>
-          <span className="mono text-[0.7rem] text-[color-mix(in_oklab,var(--color-paper)_38%,transparent)]">
+          <span className="mono text-[0.7rem] text-[color-mix(in_oklab,var(--color-paper)_38%,transparent)] whitespace-nowrap hidden sm:inline">
             {points.length} events · {generatedAt.slice(0, 10)}
           </span>
         </div>
 
-        <nav className="mono flex items-center gap-x-6 text-[0.72rem] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)]">
+        <nav className="mono flex items-center gap-x-3 sm:gap-x-5 md:gap-x-6 text-[0.65rem] sm:text-[0.72rem] text-[color-mix(in_oklab,var(--color-paper)_55%,transparent)]">
           <Link
             href="/solar-system"
-            className="hover:text-[var(--color-paper)] transition-colors duration-200"
+            className="hover:text-[var(--color-paper)] transition-colors duration-200 whitespace-nowrap"
           >
             Solar&nbsp;System
           </Link>
@@ -51,13 +51,13 @@ export default async function Home() {
           </Link>
           <Link
             href="/privacy"
-            className="hover:text-[var(--color-paper)] transition-colors duration-200"
+            className="hover:text-[var(--color-paper)] transition-colors duration-200 hidden xs:inline sm:inline"
           >
             Privacy
           </Link>
           <Link
             href="/colophon"
-            className="hover:text-[var(--color-paper)] transition-colors duration-200"
+            className="hover:text-[var(--color-paper)] transition-colors duration-200 hidden sm:inline"
           >
             Colophon
           </Link>
@@ -86,8 +86,9 @@ export default async function Home() {
         )}
       </div>
 
-      {/* Bottom footer line */}
-      <footer className="pointer-events-none relative z-20 flex items-end justify-between px-6 pb-3 md:px-10 md:pb-4">
+      {/* Bottom footer line — hidden on small screens where the canvas +
+          pause button already pack the viewport. */}
+      <footer className="pointer-events-none relative z-20 hidden md:flex items-end justify-between px-6 pb-3 md:px-10 md:pb-4">
         <span className="mono text-[0.7rem] text-[color-mix(in_oklab,var(--color-paper)_38%,transparent)]">
           Hover an icon. Click for the close-up.
         </span>
