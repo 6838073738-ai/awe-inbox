@@ -20,16 +20,21 @@ const isProd = process.env.NODE_ENV === "production";
 const CSP_DIRECTIVES = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  // Block inline event-handler attributes (onclick="...") at the CSP level.
+  // We never use them — they belong to the React pre-history.
+  "script-src-attr 'none'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://gibs.earthdata.nasa.gov",
   "font-src 'self' data:",
   "connect-src 'self' https://eonet.gsfc.nasa.gov https://gibs.earthdata.nasa.gov",
   "worker-src 'self' blob:",
+  "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  ...(isProd ? ["upgrade-insecure-requests"] : []),
+  "manifest-src 'self'",
+  ...(isProd ? ["upgrade-insecure-requests", "block-all-mixed-content"] : []),
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -55,11 +60,50 @@ const nextConfig: NextConfig = {
       { key: "X-Frame-Options", value: "DENY" },
       {
         key: "Permissions-Policy",
-        value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+        // Aggressively deny everything we don't use. Anything not listed
+        // defaults to enabled, so we enumerate.
+        value: [
+          "accelerometer=()",
+          "ambient-light-sensor=()",
+          "autoplay=()",
+          "battery=()",
+          "browsing-topics=()",
+          "camera=()",
+          "display-capture=()",
+          "encrypted-media=()",
+          "fullscreen=(self)",
+          "geolocation=()",
+          "gyroscope=()",
+          "hid=()",
+          "identity-credentials-get=()",
+          "idle-detection=()",
+          "interest-cohort=()",
+          "keyboard-map=()",
+          "magnetometer=()",
+          "microphone=()",
+          "midi=()",
+          "otp-credentials=()",
+          "payment=()",
+          "picture-in-picture=()",
+          "publickey-credentials-create=()",
+          "publickey-credentials-get=()",
+          "screen-wake-lock=()",
+          "serial=()",
+          "speaker-selection=()",
+          "storage-access=()",
+          "sync-xhr=()",
+          "usb=()",
+          "web-share=()",
+          "window-management=()",
+          "xr-spatial-tracking=()",
+        ].join(", "),
       },
       { key: "Content-Security-Policy", value: CSP_DIRECTIVES },
       { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+      { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+      { key: "Origin-Agent-Cluster", value: "?1" },
       { key: "X-DNS-Prefetch-Control", value: "on" },
+      { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
     ];
     if (isProd) {
       securityHeaders.push({
